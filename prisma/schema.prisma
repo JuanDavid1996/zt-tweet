@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // provider = "sqlite"
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+// model Widget {
+//  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+// }
+
+model User {
+  id         Int          @id @default(sequence())
+  email      String       @unique
+  firstName   String
+  lastName   String
+  username   String       @unique
+  password   String
+  tweets     Tweet[]
+  followedBy User[]       @relation("UserFollows")
+  following  User[]       @relation("UserFollows")
+  Attachment Attachment[]
+  likes      UserLike[]
+  retweets   UserRetweet[]
+}
+
+model Tweet {
+  id          Int          @id @default(sequence())
+  description String
+  ownerId     Int?
+  owner       User?        @relation(fields: [ownerId], references: [id])
+  parentId    Int?
+  parent      Tweet?       @relation("TweetReply", fields: [parentId], references: [id])
+  replies     Tweet[]      @relation("TweetReply")
+  attachments Attachment[]
+  lat         String?
+  lng         String?
+  placeName   String?
+  likes       UserLike[] 
+  retweets    UserRetweet[]
+}
+
+model Attachment {
+  id      Int    @id @default(sequence())
+  ownerId Int?
+  owner   User?  @relation(fields: [ownerId], references: [id])
+  url     String
+  type    String
+  tweetId Int?
+  Tweet   Tweet? @relation(fields: [tweetId], references: [id])
+}
+
+model UserLike {
+  id      Int    @id @default(sequence())
+  ownerId Int?
+  owner   User?  @relation(fields: [ownerId], references: [id])
+  tweetId Int?
+  Tweet   Tweet? @relation(fields: [tweetId], references: [id])
+}
+
+model UserRetweet {
+  id      Int    @id @default(sequence())
+  ownerId Int?
+  owner   User?  @relation(fields: [ownerId], references: [id])
+  tweetId Int?
+  Tweet   Tweet? @relation(fields: [tweetId], references: [id])
+}

@@ -11,16 +11,25 @@ import {
 import { Response } from 'express';
 import { User } from '@prisma/client';
 import { UserService } from './user.service';
+import { AuthService } from 'src/auth/auth.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post()
   async create(@Body() user: User, @Res() res: Response) {
     try {
       const newUser = await this.userService.create(user);
-      return res.send(newUser);
+      const result = await this.authService.login(
+        newUser.username,
+        newUser.password,
+      );
+
+      return res.send(result);
     } catch (e) {
       res.status(HttpStatus.BAD_REQUEST).send({
         error: e,

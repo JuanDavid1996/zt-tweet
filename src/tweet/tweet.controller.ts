@@ -1,18 +1,21 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
   Put,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { TweetService } from './tweet.service';
 import { Tweet } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 @Controller('tweets')
 export class TweetController {
@@ -31,9 +34,39 @@ export class TweetController {
     @Param('id', new ParseIntPipe()) id: number,
     @Body() tweet: Record<string, any>,
     @Req() req: Request,
+    @Res() res: Response,
   ) {
-    const ownerId = req['user'].id;
-    return this.tweetService.update({ ...tweet, id, ownerId } as Tweet);
+    try {
+      const ownerId = req['user'].id as number;
+      const result = await this.tweetService.update(
+        id,
+        tweet as Tweet,
+        ownerId,
+      );
+      res.send(result);
+    } catch (e) {
+      res.status(HttpStatus.FORBIDDEN).send({
+        error: e,
+      });
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete(':id')
+  async delete(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+      const ownerId = req['user'].id as number;
+      await this.tweetService.delete(id, ownerId);
+      res.send({ success: true });
+    } catch (e) {
+      res.status(HttpStatus.FORBIDDEN).send({
+        error: e,
+      });
+    }
   }
 
   @Get()

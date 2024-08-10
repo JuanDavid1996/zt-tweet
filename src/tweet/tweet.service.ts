@@ -15,7 +15,15 @@ export class TweetService {
     });
   }
 
-  async update(tweet: Tweet): Promise<Tweet> {
+  async update(tweetId: number, tweet: Tweet, ownerId: number): Promise<Tweet> {
+    const givenTweet = await this.findById(tweetId);
+    if (givenTweet.ownerId != ownerId) {
+      throw 'You are not the owner of this tweet';
+    }
+
+    delete tweet.id;
+    delete tweet.ownerId;
+
     return this.prisma.tweet.update({
       data: {
         ...tweet,
@@ -23,6 +31,27 @@ export class TweetService {
       },
       where: {
         id: tweet.id,
+      },
+    });
+  }
+
+  async delete(tweetId: number, ownerId: number): Promise<void> {
+    const tweet = await this.findById(tweetId);
+    if (tweet.ownerId != ownerId) {
+      throw 'You are not the owner of this tweet';
+    }
+
+    await this.prisma.tweet.delete({
+      where: {
+        id: tweetId,
+      },
+    });
+  }
+
+  async findById(tweetId: number): Promise<Tweet> {
+    return this.prisma.tweet.findUnique({
+      where: {
+        id: tweetId,
       },
     });
   }

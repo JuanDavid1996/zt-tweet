@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { TweetService } from './tweet.service';
 import { Tweet } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -13,6 +23,17 @@ export class TweetController {
   async create(@Body() tweet: Record<string, any>, @Req() req: Request) {
     const ownerId = req['user'].id;
     return this.tweetService.create({ ...tweet, ownerId } as Tweet);
+  }
+
+  @UseGuards(AuthGuard)
+  @Put(':id')
+  async update(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Body() tweet: Record<string, any>,
+    @Req() req: Request,
+  ) {
+    const ownerId = req['user'].id;
+    return this.tweetService.update({ ...tweet, id, ownerId } as Tweet);
   }
 
   @Get()

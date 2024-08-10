@@ -8,7 +8,22 @@ export class TweetService {
 
   async create(tweet: Tweet): Promise<Tweet> {
     return this.prisma.tweet.create({
-      data: tweet,
+      data: {
+        ...tweet,
+        createdAt: new Date(),
+      },
+    });
+  }
+
+  async update(tweet: Tweet): Promise<Tweet> {
+    return this.prisma.tweet.update({
+      data: {
+        ...tweet,
+        updatedAt: new Date(),
+      },
+      where: {
+        id: tweet.id,
+      },
     });
   }
 

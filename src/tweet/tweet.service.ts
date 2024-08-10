@@ -33,6 +33,9 @@ export class TweetService {
           },
         },
       },
+      orderBy: {
+        id: 'desc',
+      },
     });
   }
 }

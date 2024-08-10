@@ -98,7 +98,7 @@ export class TweetService {
     });
   }
 
-  async tweets(): Promise<Tweet[]> {
+  async tweets(likes = null, retweets = null): Promise<Tweet[]> {
     return this.prisma.tweet.findMany({
       include: {
         parent: true,
@@ -118,6 +118,8 @@ export class TweetService {
             lastName: true,
           },
         },
+        likes: likes,
+        retweets: retweets,
       },
       orderBy: {
         id: 'desc',

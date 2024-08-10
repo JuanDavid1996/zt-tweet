@@ -67,6 +67,7 @@ model UserLike {
   owner   User?  @relation(fields: [ownerId], references: [id])
   tweetId Int?
   Tweet   Tweet? @relation(fields: [tweetId], references: [id])
+  @@unique([ownerId, tweetId])
 }
 
 model UserRetweet {
@@ -75,4 +76,5 @@ model UserRetweet {
   owner   User?  @relation(fields: [ownerId], references: [id])
   tweetId Int?
   Tweet   Tweet? @relation(fields: [tweetId], references: [id])
+  @@unique([ownerId, tweetId])
 }

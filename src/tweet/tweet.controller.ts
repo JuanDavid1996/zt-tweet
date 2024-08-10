@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { TweetService } from './tweet.service';
 import { Tweet } from '@prisma/client';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard, AuthGuardOptional } from 'src/auth/auth.guard';
 import { Request, Response } from 'express';
 
 @Controller('tweets')
@@ -117,8 +117,21 @@ export class TweetController {
     }
   }
 
+  @UseGuards(AuthGuardOptional)
   @Get()
-  async findAll(): Promise<Tweet[]> {
-    return this.tweetService.tweets();
+  async findAll(@Req() req: Request): Promise<Tweet[]> {
+    const ownerId = req['user']?.id;
+    let likes = {};
+
+    if (ownerId) {
+      likes = {
+        where: {
+          ownerId,
+        },
+        take: 1,
+      };
+    }
+
+    return this.tweetService.tweets(likes, likes);
   }
 }

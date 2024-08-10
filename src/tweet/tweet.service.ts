@@ -21,6 +21,10 @@ export class TweetService {
     ownerId: number,
   ): Promise<Tweet> {
     const givenTweet = await this.findById(tweetId);
+    if (!givenTweet) {
+      throw 'Tweet not found';
+    }
+
     if (givenTweet.ownerId != ownerId) {
       throw 'You are not the owner of this tweet';
     }
@@ -41,6 +45,10 @@ export class TweetService {
 
   async delete(tweetId: number, ownerId: number): Promise<void> {
     const tweet = await this.findById(tweetId);
+    if (!tweet) {
+      throw 'Tweet not found';
+    }
+
     if (tweet.ownerId != ownerId) {
       throw 'You are not the owner of this tweet';
     }
@@ -52,7 +60,7 @@ export class TweetService {
     });
   }
 
-  async findById(tweetId: number): Promise<Tweet> {
+  async findById(tweetId: number): Promise<Tweet | null> {
     return this.prisma.tweet.findUnique({
       where: {
         id: tweetId,

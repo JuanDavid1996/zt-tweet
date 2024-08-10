@@ -15,7 +15,11 @@ export class TweetService {
     });
   }
 
-  async update(tweetId: number, tweet: Tweet, ownerId: number): Promise<Tweet> {
+  async update(
+    tweetId: number,
+    tweet: Record<string, any>,
+    ownerId: number,
+  ): Promise<Tweet> {
     const givenTweet = await this.findById(tweetId);
     if (givenTweet.ownerId != ownerId) {
       throw 'You are not the owner of this tweet';
@@ -30,7 +34,7 @@ export class TweetService {
         updatedAt: new Date(),
       },
       where: {
-        id: tweet.id,
+        id: tweetId,
       },
     });
   }

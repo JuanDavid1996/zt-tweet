@@ -51,12 +51,24 @@ export class TweetController {
     }
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuardOptional)
   @Get(':id')
   async findOne(
     @Param('id', new ParseIntPipe()) id: number,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
+    const ownerId = req['user']?.id;
+    let likesAndRetweet: any = false;
+
+    if (ownerId) {
+      likesAndRetweet = {
+        where: {
+          ownerId,
+        },
+      };
+    }
+
     try {
       const result = await this.tweetService.findById(id, {
         replies: {
@@ -72,6 +84,8 @@ export class TweetController {
             retweets: true,
           },
         },
+        likes: likesAndRetweet,
+        retweets: likesAndRetweet,
       });
       res.send(result);
     } catch (e) {
@@ -121,17 +135,16 @@ export class TweetController {
   @Get()
   async findAll(@Req() req: Request): Promise<Tweet[]> {
     const ownerId = req['user']?.id;
-    let likes = {};
+    let likesAndRetweet: any = false;
 
     if (ownerId) {
-      likes = {
+      likesAndRetweet = {
         where: {
           ownerId,
         },
-        take: 1,
       };
     }
 
-    return this.tweetService.tweets(likes, likes);
+    return this.tweetService.tweets(likesAndRetweet, likesAndRetweet);
   }
 }

@@ -60,11 +60,41 @@ export class TweetService {
     });
   }
 
-  async findById(tweetId: number): Promise<Tweet | null> {
+  async toggleLike(tweetId: number, ownerId: number): Promise<void> {
+    const tweet = await this.findById(tweetId);
+    if (!tweet) {
+      throw 'Tweet not found';
+    }
+
+    const like = await this.prisma.userLike.findFirst({
+      where: {
+        tweetId,
+        ownerId,
+      },
+    });
+
+    if (like) {
+      await this.prisma.userLike.delete({
+        where: {
+          id: like.id,
+        },
+      });
+    } else {
+      await this.prisma.userLike.create({
+        data: {
+          tweetId,
+          ownerId,
+        },
+      });
+    }
+  }
+
+  async findById(tweetId: number, include: any = null): Promise<Tweet | null> {
     return this.prisma.tweet.findUnique({
       where: {
         id: tweetId,
       },
+      include: include,
     });
   }
 

@@ -52,6 +52,36 @@ export class TweetController {
   }
 
   @UseGuards(AuthGuard)
+  @Get(':id')
+  async findOne(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.tweetService.findById(id, {
+        replies: {
+          orderBy: {
+            id: 'desc',
+          },
+        },
+        parent: true,
+        attachments: true,
+        _count: {
+          select: {
+            likes: true,
+            retweets: true,
+          },
+        },
+      });
+      res.send(result);
+    } catch (e) {
+      res.status(HttpStatus.FORBIDDEN).send({
+        error: e,
+      });
+    }
+  }
+
+  @UseGuards(AuthGuard)
   @Delete(':id')
   async delete(
     @Param('id', new ParseIntPipe()) id: number,
@@ -61,6 +91,24 @@ export class TweetController {
     try {
       const ownerId = req['user'].id as number;
       await this.tweetService.delete(id, ownerId);
+      res.send({ success: true });
+    } catch (e) {
+      res.status(HttpStatus.FORBIDDEN).send({
+        error: e,
+      });
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Post(':id/toggle_like')
+  async toggleLike(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+      const ownerId = req['user'].id as number;
+      await this.tweetService.toggleLike(id, ownerId);
       res.send({ success: true });
     } catch (e) {
       res.status(HttpStatus.FORBIDDEN).send({
